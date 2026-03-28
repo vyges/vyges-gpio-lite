@@ -1,0 +1,67 @@
+{
+  "$schema": "https://vyges.com/schema/v1/vyges-metadata.schema.json",
+  "name": "vyges-gpio-lite",
+  "version": "0.1.0",
+  "description": "Lightweight GPIO peripheral with native TL-UL slave interface. 32-pin configurable, per-pin direction control, per-pin edge interrupt support. No OpenTitan RACL or lifecycle dependencies.",
+  "category": "peripheral",
+  "license": "Apache-2.0",
+  "owner": "Vyges Inc.",
+  "maturity": "development",
+  "created": "2026-03-28T01:33:54Z",
+  "updated": "2026-03-28T01:33:54Z",
+  "target": ["asic", "fpga"],
+  "design_type": ["digital"],
+  "interfaces": [
+    {
+      "name": "tl",
+      "protocol": "TL-UL",
+      "role": "device",
+      "description": "TileLink-UL slave port for register access"
+    },
+    {
+      "name": "gpio",
+      "protocol": "custom",
+      "role": "master",
+      "description": "GPIO pins with output-enable (active-high)"
+    },
+    {
+      "name": "intr",
+      "protocol": "custom",
+      "role": "master",
+      "description": "Interrupt output (active high, level)"
+    }
+  ],
+  "registers": [
+    {"name": "DATA_OUT",  "offset": "0x00", "access": "RW", "description": "Output data register"},
+    {"name": "DATA_IN",   "offset": "0x04", "access": "RO", "description": "Input data (2-FF synchronized)"},
+    {"name": "DIR",       "offset": "0x08", "access": "RW", "description": "Direction: 1=output, 0=input"},
+    {"name": "INTR_EN",   "offset": "0x0C", "access": "RW", "description": "Interrupt enable per pin"},
+    {"name": "INTR_RISE", "offset": "0x10", "access": "RW", "description": "Rising-edge interrupt enable per pin"},
+    {"name": "INTR_FALL", "offset": "0x14", "access": "RW", "description": "Falling-edge interrupt enable per pin"},
+    {"name": "INTR_ST",   "offset": "0x18", "access": "W1C", "description": "Interrupt status (write-1-to-clear)"},
+    {"name": "OUT_SET",   "offset": "0x1C", "access": "WO",  "description": "Set bits in DATA_OUT"},
+    {"name": "OUT_CLR",   "offset": "0x20", "access": "WO",  "description": "Clear bits in DATA_OUT"}
+  ],
+  "parameters": [
+    {
+      "name": "NUM_PINS",
+      "type": "int unsigned",
+      "default": 32,
+      "description": "Number of GPIO pins (1..32)"
+    }
+  ],
+  "dependencies": [
+    {
+      "name": "opentitan-tlul",
+      "reason": "tlul_pkg types (tl_h2d_t, tl_d2h_t, opcodes)"
+    }
+  ],
+  "trust": {
+    "provenance": "vyges-original",
+    "review_status": "unreviewed",
+    "verification_level": "none"
+  },
+  "rtl_files": [
+    "rtl/gpio_lite.sv"
+  ]
+}
