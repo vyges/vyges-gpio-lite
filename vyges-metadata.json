@@ -9,8 +9,13 @@
   "maturity": "development",
   "created": "2026-03-28T01:33:54Z",
   "updated": "2026-03-28T01:33:54Z",
-  "target": ["asic", "fpga"],
-  "design_type": ["digital"],
+  "target": [
+    "asic",
+    "fpga"
+  ],
+  "design_type": [
+    "digital"
+  ],
   "interfaces": [
     {
       "name": "tl",
@@ -32,15 +37,60 @@
     }
   ],
   "registers": [
-    {"name": "DATA_OUT",  "offset": "0x00", "access": "RW", "description": "Output data register"},
-    {"name": "DATA_IN",   "offset": "0x04", "access": "RO", "description": "Input data (2-FF synchronized)"},
-    {"name": "DIR",       "offset": "0x08", "access": "RW", "description": "Direction: 1=output, 0=input"},
-    {"name": "INTR_EN",   "offset": "0x0C", "access": "RW", "description": "Interrupt enable per pin"},
-    {"name": "INTR_RISE", "offset": "0x10", "access": "RW", "description": "Rising-edge interrupt enable per pin"},
-    {"name": "INTR_FALL", "offset": "0x14", "access": "RW", "description": "Falling-edge interrupt enable per pin"},
-    {"name": "INTR_ST",   "offset": "0x18", "access": "W1C", "description": "Interrupt status (write-1-to-clear)"},
-    {"name": "OUT_SET",   "offset": "0x1C", "access": "WO",  "description": "Set bits in DATA_OUT"},
-    {"name": "OUT_CLR",   "offset": "0x20", "access": "WO",  "description": "Clear bits in DATA_OUT"}
+    {
+      "name": "DATA_OUT",
+      "offset": "0x00",
+      "access": "RW",
+      "description": "Output data register"
+    },
+    {
+      "name": "DATA_IN",
+      "offset": "0x04",
+      "access": "RO",
+      "description": "Input data (2-FF synchronized)"
+    },
+    {
+      "name": "DIR",
+      "offset": "0x08",
+      "access": "RW",
+      "description": "Direction: 1=output, 0=input"
+    },
+    {
+      "name": "INTR_EN",
+      "offset": "0x0C",
+      "access": "RW",
+      "description": "Interrupt enable per pin"
+    },
+    {
+      "name": "INTR_RISE",
+      "offset": "0x10",
+      "access": "RW",
+      "description": "Rising-edge interrupt enable per pin"
+    },
+    {
+      "name": "INTR_FALL",
+      "offset": "0x14",
+      "access": "RW",
+      "description": "Falling-edge interrupt enable per pin"
+    },
+    {
+      "name": "INTR_ST",
+      "offset": "0x18",
+      "access": "W1C",
+      "description": "Interrupt status (write-1-to-clear)"
+    },
+    {
+      "name": "OUT_SET",
+      "offset": "0x1C",
+      "access": "WO",
+      "description": "Set bits in DATA_OUT"
+    },
+    {
+      "name": "OUT_CLR",
+      "offset": "0x20",
+      "access": "WO",
+      "description": "Clear bits in DATA_OUT"
+    }
   ],
   "parameters": [
     {
@@ -63,5 +113,8 @@
   },
   "rtl_files": [
     "rtl/gpio_lite.sv"
-  ]
+  ],
+  "branding": {
+    "display_name": "GPIO"
+  }
 }
