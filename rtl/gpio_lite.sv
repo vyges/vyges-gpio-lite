@@ -101,6 +101,13 @@ module gpio_lite
   // Any opcode other than Get, PutFullData and PutPartialData is not
   // supported: it changes nothing and is answered with an AccessAck carrying
   // d_error.
+  // TL-UL byte enables: only lanes whose a_mask bit is set are written.
+  logic [31:0]         tl_bmask;
+  logic [NUM_PINS-1:0] wmask, wbits;
+  assign tl_bmask = {{8{tl_be[3]}}, {8{tl_be[2]}}, {8{tl_be[1]}}, {8{tl_be[0]}}};
+  assign wmask    = tl_bmask[NUM_PINS-1:0];
+  assign wbits    = tl_wdata[NUM_PINS-1:0] & wmask;
+
   logic tl_illegal;
   assign tl_illegal = !tl_we && (tl_i.a_opcode != Get);
 
@@ -154,20 +161,20 @@ module gpio_lite
 
       if (tl_req && tl_we) begin
         unique case (addr_sel)
-          ADDR_DATA_OUT:  reg_data_out <= tl_wdata[NUM_PINS-1:0];
+          ADDR_DATA_OUT:  reg_data_out <= (reg_data_out & ~wmask) | wbits;
           // DATA_IN is read-only
-          ADDR_DIR:       reg_dir      <= tl_wdata[NUM_PINS-1:0];
-          ADDR_INTR_EN:   reg_intr_en  <= tl_wdata[NUM_PINS-1:0];
-          ADDR_INTR_RISE: reg_intr_rise<= tl_wdata[NUM_PINS-1:0];
-          ADDR_INTR_FALL: reg_intr_fall<= tl_wdata[NUM_PINS-1:0];
+          ADDR_DIR:       reg_dir      <= (reg_dir & ~wmask) | wbits;
+          ADDR_INTR_EN:   reg_intr_en  <= (reg_intr_en & ~wmask) | wbits;
+          ADDR_INTR_RISE: reg_intr_rise<= (reg_intr_rise & ~wmask) | wbits;
+          ADDR_INTR_FALL: reg_intr_fall<= (reg_intr_fall & ~wmask) | wbits;
           ADDR_INTR_ST: begin
             // Write-1-to-clear: clear bits where wdata is 1, preserve new edges
-            reg_intr_st <= (reg_intr_st & ~tl_wdata[NUM_PINS-1:0])
+            reg_intr_st <= (reg_intr_st & ~wbits)
                          | (rise_detect & reg_intr_rise)
                          | (fall_detect & reg_intr_fall);
           end
-          ADDR_OUT_SET:   reg_data_out <= reg_data_out | tl_wdata[NUM_PINS-1:0];
-          ADDR_OUT_CLR:   reg_data_out <= reg_data_out & ~tl_wdata[NUM_PINS-1:0];
+          ADDR_OUT_SET:   reg_data_out <= reg_data_out | wbits;
+          ADDR_OUT_CLR:   reg_data_out <= reg_data_out & ~wbits;
           default: ;
         endcase
       end
