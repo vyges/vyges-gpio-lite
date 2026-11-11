@@ -98,6 +98,12 @@ module gpio_lite
   assign tl_wdata = tl_i.a_data;
   assign tl_be    = tl_i.a_mask;
 
+  // Any opcode other than Get, PutFullData and PutPartialData is not
+  // supported: it changes nothing and is answered with an AccessAck carrying
+  // d_error.
+  logic tl_illegal;
+  assign tl_illegal = !tl_we && (tl_i.a_opcode != Get);
+
   // Register offset: the whole 4 KB window is decoded, so offsets above the
   // register map do not alias the registers.
   logic [11:0] addr_sel;
@@ -199,11 +205,11 @@ module gpio_lite
       rsp_error_q  <= 1'b0;
     end else begin
       rsp_valid_q  <= tl_req;
-      rsp_we_q     <= tl_we;
+      rsp_we_q     <= tl_we || tl_illegal;   // AccessAck
       rsp_data_q   <= rdata;
       rsp_source_q <= tl_i.a_source;
       rsp_size_q   <= tl_i.a_size;
-      rsp_error_q  <= !reg_mapped;
+      rsp_error_q  <= !reg_mapped || tl_illegal;
     end
   end
 
