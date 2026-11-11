@@ -87,12 +87,17 @@ module gpio_lite
   // TL-UL bus decode
   // ---------------------------------------------------------------------------
   logic        tl_req;
+  logic        tl_a_ready;
+  logic        rsp_valid_q;
   logic        tl_we;
   logic [31:0] tl_addr;
   logic [31:0] tl_wdata;
   logic [3:0]  tl_be;
 
-  assign tl_req   = tl_i.a_valid;
+  // A request is accepted unless a response is still waiting on d_ready
+  // (TL-UL: the response must stay valid and unchanged until it is taken).
+  assign tl_a_ready = !rsp_valid_q || tl_i.d_ready;
+  assign tl_req     = tl_i.a_valid && tl_a_ready;
   assign tl_we    = (tl_i.a_opcode == PutFullData) || (tl_i.a_opcode == PutPartialData);
   assign tl_addr  = tl_i.a_address;
   assign tl_wdata = tl_i.a_data;
@@ -193,9 +198,8 @@ module gpio_lite
   assign gpio_oe_o = reg_dir;
 
   // ---------------------------------------------------------------------------
-  // TL-UL response (single-cycle, always ready)
+  // TL-UL response (next cycle; held while the host stalls d_ready)
   // ---------------------------------------------------------------------------
-  logic rsp_valid_q;
   logic rsp_we_q;
   logic [31:0] rsp_data_q;
   logic [7:0]  rsp_source_q;
@@ -210,7 +214,7 @@ module gpio_lite
       rsp_source_q <= 8'h0;
       rsp_size_q   <= 2'h0;
       rsp_error_q  <= 1'b0;
-    end else begin
+    end else if (tl_a_ready) begin
       rsp_valid_q  <= tl_req;
       rsp_we_q     <= tl_we || tl_illegal;   // AccessAck
       rsp_data_q   <= rdata;
@@ -229,7 +233,7 @@ module gpio_lite
   assign tl_o.d_data   = rsp_data_q;
   assign tl_o.d_user   = '0;
   assign tl_o.d_error  = rsp_error_q;
-  assign tl_o.a_ready  = 1'b1; // always accept
+  assign tl_o.a_ready  = tl_a_ready;
 
 endmodule
 
