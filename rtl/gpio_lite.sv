@@ -103,6 +103,11 @@ module gpio_lite
   logic [11:0] addr_sel;
   assign addr_sel = tl_addr[11:0];
 
+  // An offset outside the register map (or not word-aligned) is answered
+  // with d_error.
+  logic reg_mapped;
+  assign reg_mapped = (addr_sel <= ADDR_OUT_CLR) && (addr_sel[1:0] == 2'b00);
+
   // ---------------------------------------------------------------------------
   // Register read
   // ---------------------------------------------------------------------------
@@ -182,6 +187,7 @@ module gpio_lite
   logic [31:0] rsp_data_q;
   logic [7:0]  rsp_source_q;
   logic [1:0]  rsp_size_q;
+  logic        rsp_error_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -190,12 +196,14 @@ module gpio_lite
       rsp_data_q   <= 32'h0;
       rsp_source_q <= 8'h0;
       rsp_size_q   <= 2'h0;
+      rsp_error_q  <= 1'b0;
     end else begin
       rsp_valid_q  <= tl_req;
       rsp_we_q     <= tl_we;
       rsp_data_q   <= rdata;
       rsp_source_q <= tl_i.a_source;
       rsp_size_q   <= tl_i.a_size;
+      rsp_error_q  <= !reg_mapped;
     end
   end
 
@@ -207,7 +215,7 @@ module gpio_lite
   assign tl_o.d_sink   = '0;
   assign tl_o.d_data   = rsp_data_q;
   assign tl_o.d_user   = '0;
-  assign tl_o.d_error  = 1'b0;
+  assign tl_o.d_error  = rsp_error_q;
   assign tl_o.a_ready  = 1'b1; // always accept
 
 endmodule
