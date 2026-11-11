@@ -31,15 +31,15 @@ module gpio_lite
   // ---------------------------------------------------------------------------
   // Register offsets
   // ---------------------------------------------------------------------------
-  localparam logic [7:0] ADDR_DATA_OUT  = 8'h00;
-  localparam logic [7:0] ADDR_DATA_IN   = 8'h04;
-  localparam logic [7:0] ADDR_DIR       = 8'h08;
-  localparam logic [7:0] ADDR_INTR_EN   = 8'h0C;
-  localparam logic [7:0] ADDR_INTR_RISE = 8'h10;
-  localparam logic [7:0] ADDR_INTR_FALL = 8'h14;
-  localparam logic [7:0] ADDR_INTR_ST   = 8'h18;
-  localparam logic [7:0] ADDR_OUT_SET   = 8'h1C;
-  localparam logic [7:0] ADDR_OUT_CLR   = 8'h20;
+  localparam logic [11:0] ADDR_DATA_OUT  = 12'h000;
+  localparam logic [11:0] ADDR_DATA_IN   = 12'h004;
+  localparam logic [11:0] ADDR_DIR       = 12'h008;
+  localparam logic [11:0] ADDR_INTR_EN   = 12'h00C;
+  localparam logic [11:0] ADDR_INTR_RISE = 12'h010;
+  localparam logic [11:0] ADDR_INTR_FALL = 12'h014;
+  localparam logic [11:0] ADDR_INTR_ST   = 12'h018;
+  localparam logic [11:0] ADDR_OUT_SET   = 12'h01C;
+  localparam logic [11:0] ADDR_OUT_CLR   = 12'h020;
 
   // ---------------------------------------------------------------------------
   // Registers
@@ -98,9 +98,10 @@ module gpio_lite
   assign tl_wdata = tl_i.a_data;
   assign tl_be    = tl_i.a_mask;
 
-  // Address byte-select (lower 8 bits, word-aligned)
-  logic [7:0] addr_sel;
-  assign addr_sel = tl_addr[7:0];
+  // Register offset: the whole 4 KB window is decoded, so offsets above the
+  // register map do not alias the registers.
+  logic [11:0] addr_sel;
+  assign addr_sel = tl_addr[11:0];
 
   // ---------------------------------------------------------------------------
   // Register read
