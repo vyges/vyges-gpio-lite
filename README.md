@@ -12,7 +12,11 @@ TileLink SoCs without requiring RACL, alert, or lifecycle dependencies.
 - 2-FF metastability synchronizer on all inputs
 - Atomic bit-set / bit-clear registers for output data
 - Write-1-to-clear interrupt status
-- Single-cycle TL-UL response (always ready)
+- Single-cycle TL-UL response; a response the host has not yet taken (`d_ready` low) is held, and no new
+  request is accepted until it is
+- TL-UL byte enables (`a_mask`) honoured on every write, including OUT_SET, OUT_CLR and INTR_ST
+- `d_error` for offsets outside the register map (or not word-aligned) and for opcodes other than Get,
+  PutFullData and PutPartialData; such requests change nothing
 
 ## Register Map
 
@@ -27,6 +31,9 @@ TileLink SoCs without requiring RACL, alert, or lifecycle dependencies.
 | 0x18   | INTR_ST    | W1C    | Interrupt status (write-1-to-clear)     |
 | 0x1C   | OUT_SET    | WO     | Set bits in DATA_OUT (write 1 to set)   |
 | 0x20   | OUT_CLR    | WO     | Clear bits in DATA_OUT (write 1 to clr) |
+
+The full 12-bit offset is decoded within the device's 4 KB window: offsets 0x24-0xFFC are unmapped (they
+read 0 with `d_error` and writes to them change nothing). OUT_SET and OUT_CLR read 0.
 
 ## Parameters
 
